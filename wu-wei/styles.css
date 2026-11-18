@@ -1,0 +1,47 @@
+/* A. PAGE APPEARANCE: these rules position text/buttons; they do not build the sculpture. */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  overflow: hidden; /* Keep the artwork on one screen, without page scrolling. */
+  background: #141414; /* Also used while the GPU is preparing its first image. */
+  color: #e4e4df;
+  font-family: Arial, sans-serif;
+}
+canvas {
+  position: fixed;
+  inset: 0; /* Cover the viewport from all four edges. */
+  width: 100%;
+  height: 100%; /* CSS size; the internal pixel count is controlled by setCanvasDensity(). */
+}
+.quote {
+  position: fixed;
+  top: 100px; /* Change this to move the quote up/down on desktop. */
+  left: 50%;
+  transform: translateX(-50%); /* Center the quote box itself, not just its left edge. */
+  width: 80%;
+  text-align: center;
+  pointer-events: none;
+}
+h1 {
+  font: italic 24px Georgia, serif;
+  font-weight: normal;
+  margin: 0;
+  color: #deded8;
+}
+/* Fixed Full HD composition; scale the whole page uniformly to fit the display. */
+#stage {
+ position: fixed;
+ left: 50%; top: 50%;
+ width: 1920px; height: 1080px;
+ overflow: hidden;
+ transform: translate(-50%, -50%) scale(var(--stage-scale, 1));
+ transform-origin: center;
+}
+
+/* The embed uses the same type stack as the landing page. Its quote lives
+   outside the scaled artwork stage, keeping its text at actual CSS size. */
+.embed-transparent body { background:transparent; color:#111; font-family:"Helvetica Neue",Helvetica,Arial,sans-serif; }
+.embed-transparent #stage { top:calc(50% - 30px); }
+.embed-transparent .quote { position:fixed; top:auto; bottom:18px; left:50%; width:90%; transform:translateX(-50%); z-index:2; }
+.embed-transparent h1 { color:#111; font:400 18px/1.5 "Helvetica Neue",Helvetica,Arial,sans-serif; letter-spacing:0; }
+@media(max-width:700px){.embed-transparent h1{font-size:14px}.embed-transparent .quote{top:auto;bottom:12px}}

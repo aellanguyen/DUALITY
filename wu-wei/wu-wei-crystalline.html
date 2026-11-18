@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Between opposites — folded matter</title>
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<script>if(new URLSearchParams(location.search).get('embed')==='transparent')document.documentElement.classList.add('embed-transparent');</script>
+<div id="stage">
+<!-- B. HTML = THE VISIBLE CONTAINERS.
+     id="..." is a unique name JavaScript can use to find an element.
+     class="..." connects an element to the CSS rules above.
+     p5 creates its canvas inside #artwork. The quote starts empty until generation. -->
+<main id="artwork" aria-label="Interactive generative fractal sculpture"></main>
+<div class="quote"><h1></h1></div>
+</div>
+<script>
+// Keep embedded quote typography independent of the scaled Full HD canvas.
+if(document.documentElement.classList.contains('embed-transparent')){
+ document.body.appendChild(document.querySelector('.quote'));
+}
+</script>
+<!-- Load our classic scripts in this order. "defer" waits for the HTML to be ready.
+     All linked files are inside this wu-wei project folder.
+     Use Live Server: external GLSL files must be loaded through HTTP. -->
+<script defer src="./vendor/p5.min.js"></script>
+<script defer src="./quotes.js"></script>
+<script defer src="./generator.js"></script>
+<script defer src="./sketch.js"></script>
+</body>
+</html>
