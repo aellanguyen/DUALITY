@@ -82,3 +82,7 @@ The landing artwork's instruction / New composition caption is removed. Its gene
 ## GitHub
 
 Project title: **Duality**. Repository: https://github.com/aellanguyen/DUALITY. The Wu Wei philosophy and artwork study names remain part of the project content.
+
+## Fixed Full HD presentation
+
+The entire website now uses a fixed 1920px design width. Each main screen is 1000px tall beneath the 80px header, totaling 1920 × 1080. Smaller browser windows scale the complete design proportionally to fit; viewport-dependent reflow and short-window breakpoints have been removed. Artwork remains live and interactive. Source content and references continue below the two main screens.

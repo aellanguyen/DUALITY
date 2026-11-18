@@ -1,4 +1,14 @@
-'use strict';
+ 'use strict';
+
+// Every section is laid out at Full HD. Only the presentation scale changes.
+function fitFullHDPage(){
+ const scale=Math.min(1,document.documentElement.clientWidth/1920,innerHeight/1080);
+ document.documentElement.style.setProperty('--page-scale',scale);
+ document.documentElement.style.scrollPaddingTop=`${80*scale}px`;
+}
+fitFullHDPage();
+addEventListener('resize',fitFullHDPage);
+
 
 // Navigation is an enhancement: all content and artwork links work without JavaScript.
 // Mark the section currently being read, without changing scroll or generating motion.
