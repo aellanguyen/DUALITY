@@ -38,10 +38,8 @@ h1 {
  transform-origin: center;
 }
 
-/* The embed uses the same type stack as the landing page. Its quote lives
-   outside the scaled artwork stage, keeping its text at actual CSS size. */
+/* Landing embed shows only the live sculpture. Keep the generated quote
+   element available to the generator; the standalone artwork still shows it. */
 .embed-transparent body { background:transparent; color:#111; font-family:"Helvetica Neue",Helvetica,Arial,sans-serif; }
-.embed-transparent #stage { top:calc(50% - 30px); }
-.embed-transparent .quote { position:fixed; top:auto; bottom:18px; left:50%; width:90%; transform:translateX(-50%); z-index:2; }
-.embed-transparent h1 { color:#111; font:400 18px/1.5 "Helvetica Neue",Helvetica,Arial,sans-serif; letter-spacing:0; }
-@media(max-width:700px){.embed-transparent h1{font-size:14px}.embed-transparent .quote{top:auto;bottom:12px}}
+.embed-transparent #stage { top:50%; }
+.embed-transparent .quote { display:none; }

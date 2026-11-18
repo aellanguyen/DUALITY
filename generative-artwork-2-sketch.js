@@ -1,13 +1,13 @@
 /*
 PAGE ENTRY POINT (JavaScript, not Java).
-Load order in wu-wei-crystalline.html:
+Load order in generative-artwork-2.html:
 1. vendor/p5.min.js — the drawing library
-2. quotes.js — original English quote generation
-3. generator.js — random, symmetric sculpture settings
+2. quotes.js — shared English quote generation
+3. generator.js — random ornamental loop settings
 4. sketch.js — this file: canvas, shader loading, interaction, and render scheduling
 
-The mathematical sculpture lives in shaders/sculpture.frag (GLSL).
-Page appearance lives in styles.css. No Python is required by this website.
+The mathematical ink drawing lives in shaders/sculpture.frag (GLSL).
+Page appearance lives in generative-artwork-2.css. No Python is required by this website.
 Run the HTML through Live Server or another local web server, because p5 loads
 shader files over HTTP. Double-clicking the HTML as file:// may block those loads.
 */
@@ -17,11 +17,8 @@ shader files over HTTP. Double-clicking the HTML as file:// may block those load
 // sketch: the p5 instance; renderer: p5's canvas wrapper; canvas: the actual HTML canvas.
 // surfaceShader: our GPU program. sketchReady prevents redraw requests during setup.
 let sketch,renderer,canvas,surfaceShader,sketchReady=false;
-// seed: an identifier for this generation, NOT an implemented "replay this seed" control.
-// angle/tilt: horizontal/vertical camera rotation, in radians.
-// dragging and px/py: whether a pointer is held and its last position.
-// currentRules: the complete settings object for the sculpture currently on screen.
-let seed,angle=0,tilt=.03,dragging=false,px=0,py=0,currentRules;
+// seed identifies the composition; currentRules holds its complete drawing grammar.
+let seed,currentRules;
 // G. ON-DEMAND RENDERING / PERFORMANCE
 let renderFrame=0;
 // Coalesce many input events into one browser-frame redraw.
@@ -33,7 +30,8 @@ function requestRender(){
 }
 const ARTWORK_WIDTH=1920,ARTWORK_HEIGHT=1080;
 function fitStage(){
- const scale=Math.min(innerWidth/ARTWORK_WIDTH,innerHeight/ARTWORK_HEIGHT);
+ const fit=new URLSearchParams(location.search).get('embed')==='background'?Math.max:Math.min;
+ const scale=fit(innerWidth/ARTWORK_WIDTH,innerHeight/ARTWORK_HEIGHT);
  document.querySelector('#stage').style.setProperty('--stage-scale',scale);
 }
 function setCanvasDensity(p){
@@ -42,30 +40,8 @@ function setCanvasDensity(p){
 }
 fitStage();
 
-// Connect pointer events, keyboard input and tab-visibility changes to the sketch.
+// Static artwork: R, resize and visibility can request a render.
 function connectControls(p){
-// touchAction:none prevents touch scrolling/zoom gestures from interrupting sculpture rotation.
- canvas.style.touchAction='none';canvas.style.cursor='grab';
-// Begin a drag; pointer capture keeps tracking even if the pointer leaves the canvas.
- canvas.addEventListener('pointerdown',e=>{
-  dragging=true;px=e.clientX;py=e.clientY;canvas.setPointerCapture(e.pointerId);canvas.style.cursor='grabbing';
- });
- canvas.addEventListener('pointermove',e=>{
-  if(!dragging)return;
-// Pointer movement -> camera movement. .006 is rotation sensitivity (radians per pixel).
-// Vertical tilt is limited to -1.1..+1.1 radians; the shape itself is not regenerated.
-  const scale=ARTWORK_WIDTH/canvas.getBoundingClientRect().width;
-  angle+=(e.clientX-px)*scale*.006;tilt=Math.max(-1.1,Math.min(1.1,tilt+(e.clientY-py)*scale*.006));
-  px=e.clientX;py=e.clientY;
-
-  requestRender();
- });
- const release=()=>{
-  if(!dragging)return;
-  dragging=false;canvas.style.cursor='grab';
-
- };
- canvas.addEventListener('pointerup',release);canvas.addEventListener('pointercancel',release);canvas.addEventListener('lostpointercapture',release);
 // R = a new form; ignore this shortcut while a button is the keyboard target.
  addEventListener('keydown',e=>{if(e.target.tagName!=='BUTTON'&&e.key.toLowerCase()==='r')generate()});
 // Cancel queued GPU work while hidden; refresh the current image when returning to the tab.
@@ -82,18 +58,18 @@ new p5(p=>{
  // p5 waits for both external GLSL files before calling setup().
  // These paths are relative to the HTML page, not to this JavaScript file.
  p.preload=()=>{
-  surfaceShader=p.loadShader('./shaders/sculpture.vert','./shaders/sculpture.frag');
+  surfaceShader=p.loadShader('./generative-artwork-2.vert','./generative-artwork-2.frag');
  };
 // Runs once after the library/page are ready.
  p.setup=()=>{
 // WebGL 1 matches the shader syntax. preserveDrawingBuffer keeps the finished pixels
-// available for PNG export. antialias:false disables hardware MSAA (ray-marched detail is per-pixel).
+// available for PNG export. antialias:false disables hardware MSAA (contour antialiasing is per-pixel).
   p.setAttributes({version:1,antialias:false,preserveDrawingBuffer:true});
   setCanvasDensity(p);
 // Create a viewport-sized WEBGL canvas, then insert it into the #artwork container.
   renderer=p.createCanvas(ARTWORK_WIDTH,ARTWORK_HEIGHT,p.WEBGL);
   renderer.parent('artwork');canvas=renderer.elt;
-  canvas.setAttribute('aria-label','A white generative sculpture with layered surfaces, branching volumes and open passages. Drag to rotate.');
+  canvas.setAttribute('aria-label','Static full-screen black and white pattern of flowing bands, hatching and irregular cells. Black and white ink intersections are gray.');
 // The p5 shader was loaded in preload(); it is compiled/bound when used for drawing.
 // No mesh outlines. noLoop() stops continuous drawing; p5 still produces its initial frame.
 // Later calls to redraw() render exactly when input/new geometry/resize requires it.
@@ -103,18 +79,11 @@ new p5(p=>{
 // Render the current settings. This function does not choose a new shape or quote.
  p.draw=()=>{
   if(!currentRules)return;
-  // Transparent fragments cannot erase the previous orientation when blended.
-  // Clear both color and depth before drawing each complete new frame.
-  p.clear();
   p.shader(surfaceShader);
 // Send the actual buffer dimensions so the per-pixel ray calculation has the right aspect ratio.
   surfaceShader.setUniform('resolution',[p.drawingContext.drawingBufferWidth,p.drawingContext.drawingBufferHeight]);
-// Send the current camera angles. All other uniforms below come from the unchanged rules object.
-  surfaceShader.setUniform('transparentBackground',new URLSearchParams(location.search).get('embed')==='transparent'?1:0);
-  surfaceShader.setUniform('yaw',angle);surfaceShader.setUniform('pitch',tilt);
-  surfaceShader.setUniform('openings',currentRules.openings);
 // Upload shape settings; p5 handles WebGL uniform calls and caches unchanged values.
-  for(const name of ['bodies','proportions','orientations','blendWidth','textureAmount','textureFrequency','layerSpacing','ornamentScale','duality','styles','geometricMix','geometricCore','coreRules','coreStretch','symmetryOrder'])surfaceShader.setUniform(name,currentRules[name]);
+  for(const name of ['bodies','proportions','orientations','styles','geometricCore','coreRules'])surfaceShader.setUniform(name,currentRules[name]);
 // A four-corner screen-filling quad is submitted as two triangles.
 // These triangles are only the shader's drawing surface: they are NOT the sculpture's geometry.
 // Removing them removes the entire rendered image, even if you dislike triangular visual patterns.
