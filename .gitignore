@@ -1,0 +1,15 @@
+# macOS metadata
+.DS_Store
+._*
+__MACOSX/
+
+# Local tools and credentials
+.env
+.env.*
+!.env.example
+.aws/
+.codex/
+.agents/
+
+# Temporary outputs
+*.log
