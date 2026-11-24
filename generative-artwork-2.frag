@@ -2,8 +2,9 @@
 // No time, camera, animation, lighting, meshes or reference-image tracing.
 precision highp float;
 uniform vec2 resolution;
+uniform float metallicShading;
 uniform vec4 bodies[12],proportions[12],orientations[12],styles[12];
-uniform vec4 geometricCore,coreRules;
+uniform vec4 geometricCore,coreRules,weave;
 const float TAU=6.28318530718;
 mat2 rot(float a){return mat2(cos(a),-sin(a),sin(a),cos(a));}
 float hash(float n){return fract(sin(n*127.1+geometricCore.x)*43758.5453);}
@@ -116,19 +117,55 @@ void main(){
  vec2 scale=vec2(4.,3.);
  float aa=.55*max(scale.x/resolution.x,scale.y/resolution.y);
  float black=0.,white=0.;
+ float darkRelief=0.,lightRelief=0.,contactShadow=0.,crossingShadow=0.;
  // Shared, frame-spanning warp ties local motifs into one interlaced field.
  vec2 world=(uv-.5)*scale;
  vec2 flow=world;
  flow.x+=.22*sin(world.y*2.2+geometricCore.y*TAU);
  flow.y+=.24*sin(world.x*1.8+geometricCore.z*TAU);
+ vec2 weavePoint=rot(weave.x)*flow;
  for(int strand=-1;strand<=1;strand++){
   float f=float(strand),phase=geometricCore.w*TAU+f*1.7;
-  float blackPath=flow.y-f*.82-.28*sin(flow.x*2.1+phase);
-  float whitePath=flow.x-f*1.10-.32*sin(flow.y*2.3-phase);
-  float blackWidth=.042+.023*(.5+.5*sin(flow.x*2.8+phase));
-  float whiteWidth=.047+.025*(.5+.5*cos(flow.y*3.1-phase));
+  float blackPath=weavePoint.y-f*weave.y-weave.z*sin(weavePoint.x*2.1+phase);
+  float whitePath=weavePoint.x-f*weave.y*1.3-weave.z*1.15*sin(weavePoint.y*2.3-phase);
+  float blackWidth=weave.w*(.042+.023*(.5+.5*sin(weavePoint.x*2.8+phase)));
+  float whiteWidth=weave.w*(.047+.025*(.5+.5*cos(weavePoint.y*3.1-phase)));
   black=max(black,ink(blackPath,blackWidth,aa));
   white=max(white,ink(whitePath,whiteWidth,aa));
+  if(metallicShading>.5){
+   // Use the signed distance across each ribbon to place its highlight and shadow.
+   float darkProfile=blackPath/blackWidth;
+   float lightProfile=whitePath/whiteWidth;
+   float darkEdge=(darkProfile+.34)*2.6;
+   float darkHighlight=exp(-darkEdge*darkEdge);
+   float lightEdge=(lightProfile+.30)*2.4;
+   float lightHighlight=exp(-lightEdge*lightEdge);
+   float reflectance=.5+.5*sin(flow.x*3.3+flow.y*2.6+phase);
+   // Narrow reflections sit over the broader shading of each curved face.
+   float reflectedLine=(darkProfile+.34-.10*(reflectance-.5))*6.;
+   float darkGlint=exp(-reflectedLine*reflectedLine)*(.13+.15*reflectance);
+   float silverLine=(lightProfile+.30)*6.5;
+   float lightGlint=exp(-silverLine*silverLine)*(.065+.05*reflectance);
+   float darkFace=sqrt(max(0.,1.-darkProfile*darkProfile));
+   float lightFace=sqrt(max(0.,1.-lightProfile*lightProfile));
+   float rimDistance=(darkProfile+.84)*9.;
+   float brightRim=exp(-rimDistance*rimDistance);
+   // Shade the underside opposite the bright bevel to give each ribbon thickness.
+   float darkUnderside=smoothstep(.15,.95,darkProfile);
+   float lightUnderside=smoothstep(.05,.93,lightProfile);
+   darkRelief=max(darkRelief,ink(blackPath,blackWidth,aa)*
+    (.17*darkFace*(1.-.75*darkUnderside)+darkHighlight*(.20+.17*reflectance)+.23*brightRim+darkGlint));
+   lightRelief=max(lightRelief,ink(whitePath,whiteWidth,aa)*
+    (.11+.32*lightUnderside-.085*lightHighlight-.035*lightFace-lightGlint));
+   float shadowEdge=(darkProfile-1.08)*1.05;
+   float lightShadowEdge=(lightProfile-1.24)*1.45;
+   float darkCast=.22*exp(-shadowEdge*shadowEdge);
+   float lightCast=.14*exp(-lightShadowEdge*lightShadowEdge);
+   contactShadow=max(contactShadow,max(darkCast,lightCast));
+   // The light ribbon shades the dark one just past the crossing.
+   float whiteShadow=(lightProfile-1.12)*2.3;
+   crossingShadow=max(crossingShadow,.16*exp(-whiteShadow*whiteShadow));
+  }
   // Fine companions follow the same spine, carrying the pattern through crossings.
   for(int k=1;k<=2;k++){
    float offset=float(k)*.047+.06;
@@ -149,6 +186,14 @@ void main(){
  float whiteOnly=white*(1.-black);
  float overlap=black*white;
  float value=neither+whiteOnly+.5*overlap;
- // Flat black / white / 50% gray interiors. Fuzz affects contour geometry only.
+ if(metallicShading>.5){
+  // Keep the field light, with silver midtones concentrated around the ribbons.
+  float ambient=.955+.035*sin(1.4*world.x+1.8*world.y);
+  float grain=(paperNoise(paper*.48)-.5)*.026;
+  float shadedBackground=(ambient-lightRelief-contactShadow)*(1.-black);
+  float shadedInk=max(.055,.11+darkRelief-crossingShadow)*black*(1.-white);
+  float shadedOverlap=(.54+darkRelief*.38-lightRelief*.45-crossingShadow*.25)*overlap;
+  value=clamp(shadedBackground+shadedInk+shadedOverlap+grain,0.,1.);
+ }
  gl_FragColor=vec4(vec3(value),1.);
 }

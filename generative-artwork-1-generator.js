@@ -4,7 +4,9 @@
 // Depends on quotes.js; shared drawing state is declared in sketch.js.
 // F. SHAPE RULES AND RECENT-SHAPE MEMORY
 // This separate key stores shape descriptors, not quote text or full meshes.
-const historyKey='folded-matter-symmetry-v7';
+const softened=document.documentElement.dataset.depth==='softened';
+const historyKey=softened
+ ?'folded-matter-ribbons-v1':'folded-matter-symmetry-v7';
 let memoryHistory={recent:[]};
 // Read previous geometric fingerprints so a refresh can avoid similar recent parameters.
 function readHistory(){
@@ -19,12 +21,27 @@ function writeHistory(value){
  memoryHistory=value;
  for(const name of ['localStorage','sessionStorage'])try{globalThis[name].setItem(historyKey,JSON.stringify(value))}catch(e){}
 }
-// Presets constrain construction rules; every body graph is generated from scratch.
-// IMPORTANT: these names are labels, not five separate completed 3D models.
-// In the current implementation, only mode===2 directly changes the construction logic:
-// it adds more cutters and aligns their XY rotation to zero.
-// Modes 0,1,3,4 share the same generator; their different names do NOT add separate formulas.
+// Construction modes share the folded core. Axial clipping adds aligned cutters.
 const presets=['FOLDED CORE','INTERSECTING SHELLS','AXIAL CLIPPING','NESTED GATES','RADIAL FOLDS'];
+// Clone layouts describe loops as [x, y, angle, radiusX, radiusY].
+const ribbonLayouts=[
+ [[-.27,0,-.60,.38,.90],[.27,0,.60,.38,.90],[0,-.10,0,.29,.58]],
+ [[-.54,-.06,-.34,.45,.57],[0,.12,.08,.43,.66],[.54,-.06,.34,.45,.57]],
+ [[0,0,.78,.64,.84],[0,0,-.78,.32,.48]],
+ [[0,.49,1.48,.29,.68],[0,-.49,1.66,.29,.68],[-.43,0,-.44,.33,.61],[.43,0,.44,.33,.61]],
+ [[-.32,.38,-.50,.28,.55],[.33,-.36,-.50,.28,.55],[0,0,-.50,.24,.92]],
+];
+
+function makeRibbonRules(mode,range){
+ const poses=[],sections=[];
+ for(const [i,loop] of ribbonLayouts[mode].entries()){
+  const [x,y,angle,radiusX,radiusY]=loop;
+  poses.push(x+range(-.055,.055),y+range(-.055,.055),(i-1)*.16,angle+range(-.12,.12));
+  sections.push(radiusX*range(.90,1.10),radiusY*range(.90,1.10),range(.085,.14),range(-.34,.34));
+ }
+ while(poses.length<16){poses.push(0,0,0,0);sections.push(0,0,0,0)}
+ return {ribbonPoses:poses,ribbonSections:sections};
+}
 // Generate one candidate settings object. Nothing is drawn here.
 // entropy = four random 32-bit numbers; excludedMode = the previous mode to avoid immediately repeating.
 // range(min,max) below returns a number from min up to (but not including) max.
@@ -48,8 +65,7 @@ function makeRules(entropy,excludedMode=-1){
 // Choose a mode while excluding the previous one; Math.floor removes the fractional part.
  let mode=Math.floor(range(0,excludedMode<0?presets.length:presets.length-1));
  if(excludedMode>=0&&mode>=excludedMode)mode++;
-// 48% chance of bilateral mirroring. Otherwise choose rotational order 2,3,4 or 5.
-// To force bilateral symmetry for testing, replace this whole expression with 1.
+// Choose bilateral mirroring or rotational symmetry of order 2 through 5.
  const symmetryOrder=random()<.48?1:Math.floor(range(2,6));
  // Keep the old folded visual as the backbone of every composition.
 // [x,y,z,size]. This core is enabled in EVERY generated sculpture, preserving the old visual.
@@ -112,6 +128,7 @@ function makeRules(entropy,excludedMode=-1){
   blendWidth:range(.006,.018),textureAmount:range(.0008,.002),textureFrequency:range(55,90),layerSpacing:range(.12,.19),ornamentScale:range(.8,1.2),duality:0,
 // A normalized parameter fingerprint, not an image comparison or a perceptual similarity model.
 // Similar settings can look different; different fingerprints can still look visually similar.
+  ...(softened?makeRibbonRules(mode,range):{}),
   descriptor:[mode/4,symmetryOrder/5,count/12,geometricCore[3],...coreStretch,(-coreRules[0]-1.7)/.32,coreRules[1],holeCount/9,geometricMix]};
 }
 // NEW FORM WORKFLOW: select candidate rules -> save fingerprint -> make quote -> update text

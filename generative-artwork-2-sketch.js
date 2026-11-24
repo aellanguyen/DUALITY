@@ -80,10 +80,11 @@ new p5(p=>{
  p.draw=()=>{
   if(!currentRules)return;
   p.shader(surfaceShader);
+  surfaceShader.setUniform('metallicShading', document.documentElement.dataset.shading === 'metallic' ? 1 : 0);
 // Send the actual buffer dimensions so the per-pixel ray calculation has the right aspect ratio.
   surfaceShader.setUniform('resolution',[p.drawingContext.drawingBufferWidth,p.drawingContext.drawingBufferHeight]);
 // Upload shape settings; p5 handles WebGL uniform calls and caches unchanged values.
-  for(const name of ['bodies','proportions','orientations','styles','geometricCore','coreRules'])surfaceShader.setUniform(name,currentRules[name]);
+  for(const name of ['bodies','proportions','orientations','styles','geometricCore','coreRules','weave'])surfaceShader.setUniform(name,currentRules[name]);
 // A four-corner screen-filling quad is submitted as two triangles.
 // These triangles are only the shader's drawing surface: they are NOT the sculpture's geometry.
 // Removing them removes the entire rendered image, even if you dislike triangular visual patterns.

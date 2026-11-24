@@ -44,8 +44,10 @@ fitStage();
 
 // Connect pointer events, keyboard input and tab-visibility changes to the sketch.
 function connectControls(p){
-// touchAction:none prevents touch scrolling/zoom gestures from interrupting sculpture rotation.
- canvas.style.touchAction='none';canvas.style.cursor='grab';
+// Allow vertical page scrolling when the sculpture is embedded.
+ const embedded=document.documentElement.classList.contains('embed-transparent');
+ canvas.style.touchAction=embedded?'pan-y pinch-zoom':'none';
+ canvas.style.cursor='grab';
 // Begin a drag; pointer capture keeps tracking even if the pointer leaves the canvas.
  canvas.addEventListener('pointerdown',e=>{
   dragging=true;px=e.clientX;py=e.clientY;canvas.setPointerCapture(e.pointerId);canvas.style.cursor='grabbing';
@@ -110,7 +112,16 @@ new p5(p=>{
 // Send the actual buffer dimensions so the per-pixel ray calculation has the right aspect ratio.
   surfaceShader.setUniform('resolution',[p.drawingContext.drawingBufferWidth,p.drawingContext.drawingBufferHeight]);
 // Send the current camera angles. All other uniforms below come from the unchanged rules object.
-  surfaceShader.setUniform('transparentBackground',new URLSearchParams(location.search).get('embed')==='transparent'?1:0);
+  const softened=document.documentElement.dataset.depth==='softened';
+  surfaceShader.setUniform('softenedDepth',softened?1:0);
+  if(softened){
+   surfaceShader.setUniform('ribbonPoses',currentRules.ribbonPoses);
+   surfaceShader.setUniform('ribbonSections',currentRules.ribbonSections);
+  }
+  const embedded=new URLSearchParams(location.search).get('embed')==='transparent';
+  const composite=document.documentElement.dataset.composite==='work-2';
+  surfaceShader.setUniform('transparentBackground',embedded||composite?1:0);
+  surfaceShader.setUniform('embeddedFraming',embedded?1:0);
   surfaceShader.setUniform('yaw',angle);surfaceShader.setUniform('pitch',tilt);
   surfaceShader.setUniform('openings',currentRules.openings);
 // Upload shape settings; p5 handles WebGL uniform calls and caches unchanged values.

@@ -3,38 +3,87 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Duality — HelloWorld explores youth employment, artificial intelligence and Wu Wei through generative art for SDG 8.">
+  <meta name="description" content="Duality explores youth employment, technological change and Wu Wei through two generative artworks for SDG 8.">
   <title>Duality — HelloWorld</title>
   <link rel="stylesheet" href="styles.css">
   <script src="script.js" defer></script>
 </head>
 <body>
-  <svg class="icon-definitions" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><symbol id="arrow" viewBox="0 0 40 24"><path d="M2 12C11 11 22 13 36 12M27 3L36 12L27 21" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol></defs></svg>
   <a class="skip-link" href="#main">Skip to content</a>
-  <div class="site-stage">
-  <header class="site-header">
-    <a class="wordmark" href="#home" aria-label="Duality, home">Duality</a>
+  <header class="site-header page-width" id="home">
+    <a class="wordmark" href="#home">Duality</a>
     <nav aria-label="Main navigation">
-      <a href="#home">Duality</a><a href="#credits">Group</a><a href="#perspective">SDG &amp; abstract</a>
+      <a href="#work-one">Artworks</a>
+      <a href="#perspective">SDG 8</a>
     </nav>
-    <span class="header-note">RMIT Vietnam · 2026</span>
   </header>
 
   <main id="main">
-    <div class="opening-screen">
-    <section class="hero" id="home" aria-labelledby="hero-title">
-      <div class="hero-heading">
+    <div class="artwork-sequence" id="work-one">
+      <section class="hero" aria-labelledby="hero-title">
         <h1 id="hero-title">Duality</h1>
-        <div class="hero-intro"><span class="eyebrow">HelloWorld · Generative studies</span><p>Grasp the Flow,<br>Be Fluid.</p><span class="hero-description">An exploration of opposing forces.<br>Structure and chance. Agency and adaptation.</span></div>
+        <div class="hero-message">
+          <section class="quote-panel" aria-label="Selected quote">
+            <blockquote>
+              <p>“The future of work will not be determined by technology alone.”</p>
+              <footer>Gilbert F. Houngbo</footer>
+            </blockquote>
+          </section>
+
+          <section class="action-banner" id="call-to-action" aria-labelledby="action-title">
+            <h2 id="action-title">Work with change,<br>not against it.</h2>
+          </section>
+        </div>
+      </section>
+      <section class="work-two" id="work-two" aria-label="Artwork 2">
+        <div class="artwork-background" aria-hidden="true">
+          <iframe id="artwork-two" src="generative-artwork-2-clone.html?embed=background" title="Artwork 2, a generative pattern of interleaved shapes" tabindex="-1"></iframe>
+        </div>
+      </section>
+      <div class="sculpture-track">
+        <div class="sculpture">
+          <iframe id="artwork-one" src="generative-artwork-1.html?embed=transparent" title="Artwork 1, interactive generative sculpture"></iframe>
+        </div>
       </div>
-      <figure class="hero-art">
-        <div class="artwork-frame"><iframe id="artwork-one" src="generative-artwork-1.html?embed=transparent" title="Generative Artwork 1 — live generative sculpture, drag to rotate"></iframe></div>
-      </figure>
+    </div>
+
+    <section class="context panel" id="project" aria-labelledby="project-title">
+      <h2 id="project-title">About the project</h2>
+      <div class="about-message">
+        <blockquote>
+          <p>“The future of work will not be determined by technology alone.”</p>
+          <footer>Gilbert F. Houngbo</footer>
+        </blockquote>
+        <p class="about-action">Work with change, not against it.</p>
+      </div>
+      <div>
+        <p>Houngbo’s <strong>human-centred approach to technological progress</strong> connects productivity gains with decent wages, worker protections, skills development and social dialogue. These conditions help ensure technological innovation supports decent employment.</p>
+        <p>For young people facing insecure entry-level work, these choices shape who gets access to opportunity. <strong>NEET status and Tang Ping describe distinct circumstances.</strong> NEET describes being outside employment, education or training. Tang Ping, or “lying flat,” describes a way of responding to social and economic pressures. Both bring questions of exclusion, effort and reward into focus.</p>
+        <p>Drawing on the Daoist philosophy of <em>Wu Wei</em>, the two artworks explore how to adapt while retaining creative agency. One folds volume into a changing sculpture. The other lets interwoven shapes form new relationships where they meet.</p>
+        <details id="references">
+          <summary>References</summary>
+          <p>International Labour Organization (2026), opening of the 114th International Labour Conference, 2 June. <a href="https://www.ilo.org/resource/news/ilc/ilc114/%E2%80%9C-future-work-will-not-be-determined-technology-alone%E2%80%9D-says-ilo-director">ILO news release</a>.</p>
+          <p>Ren X, Abdullah H, Mohamed Shaffril HA, Abdul Rahman H and Zaremohzzabieh Z (2026) 'A scoping review of "Tang ping" (lying flat) and mental health status among Chinese youth', <cite>PLOS ONE</cite>, 21(3):e0342591, <a href="https://doi.org/10.1371/journal.pone.0342591">doi:10.1371/journal.pone.0342591</a>.</p>
+          <p>United Nations (2015), <cite>Transforming our world: the 2030 Agenda for Sustainable Development</cite>. <a href="https://sdgs.un.org/2030agenda">2030 Agenda</a>.</p>
+        </details>
+      </div>
     </section>
 
-    <section class="section editorial-grid credits-section" id="credits" aria-labelledby="credits-title">
-      <div class="section-label"><span>Project information</span><h2 id="credits-title">HelloWorld</h2></div>
-      <div class="section-body">
+    <section class="sdg-intro panel" id="perspective" aria-labelledby="sdg-title">
+      <p class="eyebrow">Sustainable Development Goal 8</p>
+      <div>
+        <h2 id="sdg-title">Decent Work and Economic Growth</h2>
+        <p>SDG 8 calls for inclusive, sustainable economic growth, productive employment and decent work for all. For young people entering creative industries, it asks how technological change can expand access to secure, fairly paid work.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer page-width" id="credits" aria-labelledby="credits-title">
+    <div>
+      <h2 id="credits-title">HelloWorld</h2>
+      <a href="#home">Back to top</a>
+    </div>
         <dl class="credits-list">
           <div><dt>Affiliation</dt><dd>RMIT University Vietnam, Saigon South Campus, School of Communication and Design, Digital Media Program</dd></div>
           <div><dt>Course</dt><dd>Digital Media Specialisation 1 (COMM2754)</dd></div>
@@ -42,65 +91,6 @@
           <div><dt>Group members' names</dt><dd><ol><li>Hoang Minh Y Nguyen — s4087494</li><li>To Pham Chau Bao — s3891976</li><li>Doan Nguyen Ngoc Khanh — s4135658</li></ol></dd></div>
           <div><dt>Date</dt><dd><time datetime="2026-11-17T01:37:00+07:00">2026-11-17 01:37:00</time></dd></div>
         </dl>
-      </div>
-    </section>
-
-    </div>
-
-    <div class="narrative">
-      <div class="narrative-art" aria-hidden="true"><iframe id="artwork-two" src="generative-artwork-2.html?embed=background" title="Generative Artwork 2 — generative background" tabindex="-1" loading="lazy"></iframe></div>
-    <section class="reading-page" id="perspective" aria-labelledby="quote-title">
-      <div class="reading-column">
-        <aside class="perspective-panel" aria-label="SDG 8 and selected quotation">
-      <div class="sdg-intro"><span class="eyebrow">Our perspective</span><h2>SDG 8</h2><p>Decent Work and Economic Growth</p></div>
-      <div class="quote-topline"><h2 class="eyebrow" id="quote-title">Selected Quote — Hannah Arendt</h2><span>1958 / 1998</span></div>
-      <blockquote>
-        <p>“a society of laborers without labor”</p>
-        <footer>Hannah Arendt <span>— <cite>The Human Condition</cite> (1998:5, excerpt)</span></footer>
-      </blockquote>
-      <details class="quote-source"><summary>Publication details</summary>
-      <dl class="publication-details">
-        <div><dt>Author</dt><dd>Hannah Arendt (1906–1975)</dd></div>
-        <div><dt>Publication</dt><dd><cite>The Human Condition</cite></dd></div>
-        <div><dt>Original publication</dt><dd>1958</dd></div>
-        <div><dt>Consulted edition</dt><dd>2nd edition, 1998</dd></div>
-        <div><dt>Publisher</dt><dd>University of Chicago Press, Chicago</dd></div>
-        <div><dt>Location</dt><dd>Prologue, p. 5</dd></div>
-      </dl>
-      </details>
-        </aside>
-        <div class="abstract-content" id="project" aria-labelledby="project-title">
-          <h2 id="project-title">Abstract</h2>
-      <div class="section-body">
-        <p class="lead">Hannah Arendt's phrase <strong>“a society of laborers without labor”</strong> (1998:5) frames this project's exploration of youth unemployment and professional uncertainty under <strong>Sustainable Development Goal 8 (SDG 8)</strong>.</p>
-        <p>The phrase raises a question for young creatives: how can people retain agency when the work around which they build their lives changes? As artificial intelligence transforms creative industries, uncertainty about employment can contribute to anxiety, disengagement and passive resignation. The <em>Tang Ping</em> ("lying flat") phenomenon provides a context for exploring these responses among young people (Ren et al. 2026). This connects Arendt's warning to SDG 8's commitment to productive employment and decent work for all.</p>
-        <p>Drawing upon the Daoist philosophy of <strong>Wu Wei</strong>, our theme explores the tension between passive resignation and intentional adaptation. We propose engaging with technological change without surrendering creative autonomy. The two p5.js generative artworks express interdependence through contrasting forms: folded volumes in one, and interwoven black and white shapes whose intersections become gray in the other. Their changing compositions give visual form to the relationship between structure, chance and adaptation.</p>
-        <section class="call-to-action" aria-labelledby="call-to-action-title">
-          <span class="eyebrow">Call to action</span>
-          <h3 id="call-to-action-title">Grasp the Flow, Be Fluid.</h3>
-          <p>Reclaim your creative agency. Integrate emerging technologies into your practice and actively shape your professional future.</p>
-        </section>
-        <div class="goal-statement">
-          <span class="eyebrow">SDG 8 — Decent Work and Economic Growth</span>
-          <p><strong>United Nations Sustainable Development Goal 8:</strong> "Promote sustained, inclusive and sustainable economic growth, full and productive employment and decent work for all" (United Nations 2015).</p>
-        </div>
-      </div>
-        </div>
-
-      </div>
-    </section>
-
-    <section class="section editorial-grid references-section" id="references" aria-labelledby="references-title">
-      <div class="section-label"><span>Sources</span><h2 id="references-title">References.</h2></div>
-      <div class="section-body reference-list">
-        <p>Arendt H (1998) <cite>The human condition</cite>, 2nd edn, University of Chicago Press, Chicago. Originally published 1958.</p>
-        <p>Ren X, Abdullah H, Mohamed Shaffril HA, Abdul Rahman H and Zaremohzzabieh Z (2026) 'A scoping review of "Tang ping" (lying flat) and mental health status among Chinese youth', <cite>PLOS ONE</cite>, 21(3):e0342591, <a href="https://doi.org/10.1371/journal.pone.0342591">doi:10.1371/journal.pone.0342591</a>.</p>
-        <p>United Nations (2015) <cite>Transforming our world: the 2030 Agenda for Sustainable Development</cite>, United Nations website, accessed 17 November 2026. <a href="https://sdgs.un.org/2030agenda">https://sdgs.un.org/2030agenda</a></p>
-      </div>
-    </section>
-    </div>
-  </main>
-  <footer class="site-footer"><a class="wordmark" href="#home">Duality</a><span>Grasp the Flow, Be Fluid.</span><a href="#home">Back to top <svg class="arrow-icon arrow-up" aria-hidden="true"><use href="#arrow"/></svg></a></footer>
-  </div>
+  </footer>
 </body>
 </html>

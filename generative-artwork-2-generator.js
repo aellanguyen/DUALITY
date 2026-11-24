@@ -19,6 +19,14 @@ function writeHistory(value){
  memoryHistory=value;
  for(const name of ['localStorage','sessionStorage'])try{globalThis[name].setItem(historyKey,JSON.stringify(value))}catch(e){}
 }
+// Angle, strand spacing, curvature and width define the frame-wide weave.
+const weaves=[
+ [0,.84,.28,1.00],
+ [.79,.73,.20,1.36],
+ [-.65,1.03,.39,.76],
+ [.12,.58,.52,1.15],
+ [1.48,.92,.16,1.62],
+];
 // Same makeRules -> generate -> uniforms structure as study 01.
 // Here bodies describe 2D pattern neighborhoods and their black/white ink assignment.
 function makeRules(entropy,excludedMode=-1){
@@ -26,28 +34,30 @@ function makeRules(entropy,excludedMode=-1){
  const random=()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return state/4294967296};
  const range=(a,b)=>a+(b-a)*random();
  const balance=Array.from({length:5},()=>range(.08,.92));
- let mode=Math.floor(range(0,excludedMode<0?5:4));
+ let mode=Math.floor(range(0,excludedMode<0?weaves.length:weaves.length-1));
  if(excludedMode>=0&&mode>=excludedMode)mode++;
  // Twelve overlapping neighborhoods cover the frame, including its edges.
  // Every neighborhood has its own seeded drawing grammar, not a copied tile.
  const count=12,roots=12;
+ const weave=weaves[mode].map(value=>value+range(-.045,.045));
+ const dominantFamilies=[3,4,1,2,0];
+ const pitch=[1.05,.83,.97,1.18,1.13][mode];
  const bodies=[],proportions=[],orientations=[],styles=[];
  for(let i=0;i<12;i++){
   const col=i%4,row=Math.floor(i/4);
   const x=(col+.5)/4+range(-.065,.065);
   const y=(row+.5)/3+range(-.075,.075);
   // Independent black/white coverage. White paper itself is not white ink.
-  bodies.push(x,y,(row+col)%2,range(.62,.94));
+  bodies.push(x,y,(row+col)%2,range(.62,.94)*pitch);
   proportions.push(range(.72,1.35),range(.72,1.35),Math.floor(range(2,8)),range(-.4,.4));
   orientations.push(range(-Math.PI,Math.PI),range(0,Math.PI*2),range(0,1000),range(.4,1.7));
-  // Mostly open flowing bands, hatching and cellular contours; occasional radial accents.
-  const choice=random();
-  const family=choice<.38?3:choice<.68?4:choice<.9?1:choice<.97?0:2;
+  // Give the composition a dominant motif, with occasional contrasting neighborhoods.
+  const family=random()<.72?dominantFamilies[mode]:Math.floor(range(0,5));
   styles.push(Math.floor(range(8,30)),range(.06,.30),range(.0012,.004),family);
  }
  const geometricCore=[range(0,1000),range(.25,.9),range(.15,.7),range(.2,.8)];
  const coreRules=[count,roots,range(.3,.95),range(.2,.9)];
- return {balance,mode,bodies,proportions,orientations,styles,geometricCore,coreRules,
+ return {balance,mode,bodies,proportions,orientations,styles,geometricCore,coreRules,weave,
   descriptor:[mode/4,count/12,roots/4,geometricCore[1],geometricCore[2],
    ...styles.filter((_,i)=>i%4===1).slice(0,4)]};
 }

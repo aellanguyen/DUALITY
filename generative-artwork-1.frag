@@ -5,7 +5,7 @@ precision highp float;
 // float = one number; vec2/vec3/vec4 = 2/3/4 numbers; .x/.y/.z/.w select components.
 // resolution is the internal drawing-buffer size in pixels, not necessarily the CSS size.
 uniform vec2 resolution;
-uniform float transparentBackground;
+uniform float transparentBackground,embeddedFraming,softenedDepth;
 // yaw/pitch: camera angles; duality: optional black/white material split (currently always 0).
 // blendWidth: softness where added volumes meet.
 // textureAmount: tiny surface-displacement height; textureFrequency: its repetition rate.
@@ -30,6 +30,7 @@ uniform vec4 bodies[12],proportions[12],orientations[12],styles[12],openings[9];
 uniform vec4 geometricCore,coreRules;
 // coreStretch stretches the main core separately along X, Y and Z.
 uniform vec3 coreStretch;
+uniform vec4 ribbonPoses[4],ribbonSections[4];
 // Small shared math helpers. rot() turns a 2D coordinate pair.
 // GLSL mix(a,b,t) blends a->b; clamp(x,low,high) restricts a number to a range.
 mat2 rot(float a){return mat2(cos(a),-sin(a),sin(a),cos(a));}
@@ -53,7 +54,6 @@ float oldFoldedCore(vec3 p){
  mat2 foldXZ=rot(coreRules.z),foldYZ=rot(coreRules.z*.57);
  float inversionLimit=1./coreRules.y,scaleMagnitude=abs(coreRules.x);
 // 10 recursive passes create large folds plus smaller folds nested within them.
-// If changing this depth, also review the -9 exponent below: it represents 1 - 10.
  for(int i=0;i<10;i++){
   z.xz=foldXZ*z.xz;z.yz=foldYZ*z.yz;
 // Box fold: reflect coordinates back across the boundaries -1 and +1.
@@ -66,6 +66,26 @@ float oldFoldedCore(vec3 p){
  }
 // Convert the transformed point back to a surface-distance estimate in scene units.
  return ((length(z)-abs(coreRules.x-1.))/dr-pow(abs(coreRules.x),-9.))/2.25*geometricCore.w*min(coreStretch.x,min(coreStretch.y,coreStretch.z));
+}
+// A rounded ribbon around an oval opening. Its cross-section is wider than it is deep.
+float ribbonLoop(vec3 q,vec2 radii,float width,float depth){
+ float radial=(length(q.xy/radii)-1.)*min(radii.x,radii.y);
+ vec2 edge=abs(vec2(radial,q.z))-vec2(width,depth)+.065;
+ return length(max(edge,0.))+min(max(edge.x,edge.y),0.)-.065;
+}
+float ribbonForm(vec3 p){
+ float form=8.;
+ for(int i=0;i<4;i++){
+  vec4 pose=ribbonPoses[i],section=ribbonSections[i];
+  if(section.x>.001){
+   vec3 q=p-pose.xyz;
+   q.xy=rot(pose.w)*q.xy;
+   q.z-=section.w*q.y+.12*q.y*q.y;
+   float loop=ribbonLoop(q,section.xy,section.z,.095);
+   form=merge(form,loop,.05);
+  }
+ }
+ return form;
 }
 // Despite its historical name, this returns an L8 "box-like length", not squared distance.
 // A normal length() gives circular sections; this gives squarer, softly cornered sections.
@@ -97,7 +117,6 @@ float sculpture(vec3 p){
    float radius=body.w;
 // Per-body hardness: 0 is organic/round; 1 is more geometric/box-like.
    float hard=styles[i].x;
-   // Broad folded surfaces remain visible beneath the finer ornament.
    q.x+=sin(q.y/radius*4.+sin(q.z/radius*3.))*radius*.045*(1.-hard);
    q.z+=sin(q.x/radius*5.+q.y/radius*3.)*radius*.035*(1.-hard);
    float v;
@@ -110,8 +129,8 @@ float sculpture(vec3 p){
    }else if(shape.w<1.5){
     v=mix(length(q),squaredLength(q),hard)-body.w;
    }else if(shape.w<2.5){
-    // Hollow volumetric layers, rather than triangular tessellation.
-    v=abs(mix(length(q),squaredLength(q),hard)-body.w)-body.w*turn.w;
+    float shellBoundary=mix(length(q),squaredLength(q),hard)-body.w;
+    v=abs(shellBoundary)-body.w*turn.w;
    }else{
     vec3 box=abs(q)-vec3(body.w*(.65+.23*hard));
     v=length(max(box,0.))+min(max(box.x,max(box.y,box.z)),0.)-body.w*(.35-.23*hard);
@@ -183,6 +202,7 @@ float sculpture(vec3 p){
 // STRUCTURAL SYMMETRY: query a reflected coordinate instead of drawing separate copies.
 // Because the whole construction is reflected, cutters and fine ornament also match.
 float scene(vec3 p){
+ if(softenedDepth>.5)return ribbonForm(p)*.54;
  vec3 q=p;
 // Bilateral case: the left half queries the same geometry as the right half.
  if(symmetryOrder<1.5){q.x=abs(q.x);}
@@ -224,13 +244,14 @@ void main(){
  vec2 uv=(gl_FragCoord.xy*2.-resolution)/resolution.y;
 // Camera framing: larger 6.2 moves the camera away, making the sculpture look smaller.
 // Narrow windows move it farther away to keep the shape within the screen width.
- float cameraDistance=6.2/min(1.,resolution.x/resolution.y);
+ float perspectiveScale=mix(1.,1.28,softenedDepth);
+ float cameraDistance=6.2*perspectiveScale/min(1.,resolution.x/resolution.y);
 // ro = ray origin (camera position). yaw/pitch rotate the camera around the object.
  vec3 ro=vec3(0.,.15,cameraDistance);ro.yz=rot(pitch)*ro.yz;ro.xz=rot(yaw)*ro.xz;
 // Build forward/right/up camera directions, looking at the origin [0,0,0].
  vec3 target=vec3(0.,0.,0.),ww=normalize(target-ro),uu=normalize(cross(ww,vec3(0.,1.,0.))),vv=cross(uu,ww);
 // rd = ray direction. 2.55 is the focal-length factor; larger values magnify the object.
- float focalLength=mix(2.55,3.8,transparentBackground);
+ float focalLength=mix(2.55,3.8,embeddedFraming)*perspectiveScale;
  vec3 rd=normalize(uv.x*uu+uv.y*vv+focalLength*ww);
 // t is distance traveled along the ray; hit remembers whether we reached a surface.
  float t=0.,d=0.;bool hit=false;
@@ -261,6 +282,11 @@ void main(){
 // Brightness recipe: .32 ambient base, .66 main light, .16 fill, .06 bounce,
 // plus .26 highlight and .10 rim. These change shading, not geometry.
   float value=(.32+.66*diff*sh+.16*fill+.06*bounce)*ambient+spec*.26*sh+rim*.10*ambient;
+  if(softenedDepth>.5){
+   // Lift the valleys and soften the edge light while retaining surface relief.
+   value=(.47+.48*diff*mix(1.,sh,.65)+.12*fill+.05*bounce)
+    *mix(ambient,1.,.23)+spec*.16*sh+rim*.05*ambient;
+  }
   // White porcelain highlights, with occlusion reserved for the deep cavities.
 // Optional material split. duality=0 (the generator's current setting) keeps a white material.
 // Raising duality toward 1 adds a dark region; shadows alone already create black/white contrast.

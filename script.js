@@ -23,29 +23,23 @@ if ('IntersectionObserver' in window) {
   sections.forEach(section => observer.observe(section));
 }
 
-// Regenerate within the existing iframe; the visitor stays on the parent page.
-for (const button of document.querySelectorAll('[data-artwork]')) {
-  const frame = document.getElementById(button.dataset.artwork);
-  const regenerate = () => {
-    try {
-      const draw = frame.contentWindow.generate;
-      if (typeof draw !== 'function') return false;
-      draw();
-      return true;
-    } catch {
-      return false;
-    }
-  };
-  button.addEventListener('click', () => {
-    if (regenerate()) return;
-    button.disabled = true;
-    button.textContent = 'Loading artwork…';
-    // This only loads the embedded study, never navigates the main page.
-    frame.loading = 'eager';
-    frame.src = frame.getAttribute('src');
-  });
-  frame.addEventListener('load', () => {
-    button.disabled = false;
-    button.textContent = 'New composition';
-  });
+// Move the sticky sculpture from the lower edge of the title to the centre
+// of Artwork 2. The track ends there, so both artworks then scroll away together.
+const sequence = document.querySelector('.artwork-sequence');
+const openingScene = sequence.querySelector('.hero');
+let scrollFrame = 0;
+
+function updateSculpturePosition() {
+  scrollFrame = 0;
+  const { top, height } = openingScene.getBoundingClientRect();
+  const travel = Math.max(0, Math.min(1, -top / height));
+  sequence.style.setProperty('--travel', travel);
 }
+
+function scheduleSculpturePosition() {
+  if (!scrollFrame) scrollFrame = requestAnimationFrame(updateSculpturePosition);
+}
+
+window.addEventListener('scroll', scheduleSculpturePosition, { passive: true });
+window.addEventListener('resize', scheduleSculpturePosition);
+updateSculpturePosition();
